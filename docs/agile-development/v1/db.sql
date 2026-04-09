@@ -167,7 +167,8 @@ INSERT INTO banks (name, code) VALUES
 INSERT INTO admins (name, email, password_hash, role) VALUES
     ('Super Admin', 'master@cakli.id', '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq', 'master_admin'),
     ('Operation Admin', 'operation@cakli.id', '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq', 'operation_admin'),
-    ('Reporting Admin', 'reporting@cakli.id', '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq', 'reporting_admin');
+    ('Reporting Admin', 'reporting@cakli.id', '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq', 'reporting_admin')
+ON CONFLICT (email) WHERE deleted_at IS NULL DO NOTHING;
 
 -- ============================================================
 -- 8. FUNCTIONS & TRIGGERS

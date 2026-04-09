@@ -17,7 +17,7 @@ INSERT INTO admins (name, email, password_hash, role, is_active) VALUES
     ('Super Admin', 'master@cakli.id', '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq', 'master_admin', true),
     ('Operation Admin', 'operation@cakli.id', '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq', 'operation_admin', true),
     ('Reporting Admin', 'reporting@cakli.id', '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq', 'reporting_admin', true)
-ON CONFLICT (email) DO UPDATE SET
+ON CONFLICT (email) WHERE deleted_at IS NULL DO UPDATE SET
     name = EXCLUDED.name,
     password_hash = EXCLUDED.password_hash,
     role = EXCLUDED.role,

@@ -1,7 +1,7 @@
 # CAKLI Makefile — Task Automation
 # Project: CAKLI Web Admin v1
 
-.PHONY: dev up down build logs seed clean setup-minio
+.PHONY: dev up down build logs seed clean setup-minio db-init
 
 # Default: Show help
 help:
@@ -24,9 +24,8 @@ help:
 dev:
 	@echo "🚀 Starting CAKLI development stack..."
 	docker compose up -d --build postgres minio backend-api
-	@echo "🌱 Seeding database..."
-	docker compose exec backend-api ./api -seed
-	@echo "✅ Seeding complete"
+	$(MAKE) db-init
+	$(MAKE) seed
 	@echo "📋 Syncing environment variables to web-admin..."
 	powershell -Command "Copy-Item .env ./apps/web/.env.local -Force; (Get-Content ./apps/web/.env.local) -replace 'API_INTERNAL_URL=http://api:8080', 'API_INTERNAL_URL=http://localhost:8080' | Set-Content ./apps/web/.env.local"
 	@echo "🌐 Starting Frontend (Next.js)..."
@@ -50,7 +49,9 @@ logs:
 
 seed:
 	@echo "🌱 Seeding database..."
-	docker compose exec backend-api ./api -seed
+	docker cp ./docs/agile-development/v1/seed-multi-role-admins.sql cakli-db:/seed.sql
+	docker exec cakli-db psql -U cakli -d cakli_db -f /seed.sql
+	docker exec cakli-db rm /seed.sql
 	@echo "✅ Seeding complete"
 
 # ── MinIO Setup ──
@@ -58,6 +59,14 @@ seed:
 setup-minio:
 	@echo "🔧 Configuring MinIO bucket policy..."
 	powershell -ExecutionPolicy Bypass -File ./scripts/setup-minio.ps1
+
+db-init:
+	@echo "⏳ Waiting for database to be ready..."
+	@powershell -Command "$$max=30; for($$i=0;$$i -lt $$max;$$i++){ docker exec cakli-db pg_isready -U cakli -d cakli_db -q; if($$LASTEXITCODE -eq 0){ break }; Start-Sleep -Seconds 1 }"
+	@echo "🗄️ Initializing database schema (if needed)..."
+	docker cp ./docs/agile-development/v1/db.sql cakli-db:/db.sql
+	docker exec cakli-db sh -lc "psql -U cakli -d cakli_db -tAc \"SELECT to_regclass('public.admins') IS NOT NULL\" | grep -qi t || psql -U cakli -d cakli_db -v ON_ERROR_STOP=0 -f /db.sql"
+	docker exec cakli-db rm /db.sql
 
 # ── Cleanup ──
 
