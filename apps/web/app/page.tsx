@@ -42,6 +42,7 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        e.stopPropagation(); // Add propagation stop
         
         if (!email || !password) {
             toast.error("Email dan password wajib diisi");
@@ -51,38 +52,35 @@ export default function LoginPage() {
         setIsLoading(true);
 
         try {
+            console.log("Attempting login with", email);
             await login(email, password);
-            
-            // Get admin data to determine redirect
-            const response = await api.get("/auth/me");
-            const adminData = response.data.data;
-            
+            console.log("Login success, admin data set");
             toast.success("Login berhasil!");
             
-            // Redirect based on role
-            switch (adminData.role) {
-                case "master_admin":
-                    router.push("/master-admin");
-                    break;
-                case "operation_admin":
-                    router.push("/operation-admin");
-                    break;
-                case "reporting_admin":
-                    router.push("/reporting-admin");
-                    break;
-                default:
-                    router.push("/operation-admin");
+            // Trigger manual redirection as well for reliability
+            const adminData = localStorage.getItem('access_token');
+            if (adminData) {
+                // If useEffect doesn't catch it quickly enough
+                const response = await api.get("/auth/me");
+                const role = response.data.data.role;
+                console.log("Manual redirect to", role);
+                window.location.href = `/${role.replace('_', '-')}`;
             }
         } catch (error: any) {
+            console.error("Login error:", error);
             toast.error(error.message || "Login gagal");
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Show nothing while redirecting to avoid hydration mismatch
-    if (isAuthenticated) {
-        return null;
+    // If authenticated, show a loading state while redirecting
+    if (isAuthenticated && !isLoading) {
+        return (
+            <div className="min-h-screen bg-[#e8e4e0] flex items-center justify-center p-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e67e22]"></div>
+            </div>
+        );
     }
 
     return (
@@ -153,7 +151,7 @@ export default function LoginPage() {
                     </div>
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} method="POST" className="space-y-5">
                         {/* Email Field */}
                         <div className="space-y-2">
                             <Label htmlFor="email" className="text-sm font-medium text-slate-700">

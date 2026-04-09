@@ -24,6 +24,9 @@ help:
 dev:
 	@echo "🚀 Starting CAKLI development stack..."
 	docker compose up -d --build postgres minio backend-api
+	@echo "🌱 Seeding database..."
+	docker compose exec backend-api ./api -seed
+	@echo "✅ Seeding complete"
 	@echo "📋 Syncing environment variables to web-admin..."
 	powershell -Command "Copy-Item .env ./apps/web/.env.local -Force; (Get-Content ./apps/web/.env.local) -replace 'API_INTERNAL_URL=http://api:8080', 'API_INTERNAL_URL=http://localhost:8080' | Set-Content ./apps/web/.env.local"
 	@echo "🌐 Starting Frontend (Next.js)..."
