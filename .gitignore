@@ -1,0 +1,215 @@
+# ===================================
+# CAKLI Project - Git Ignore Rules
+# ===================================
+
+# ===== Environment Variables =====
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+*.env
+
+# ===== Go Backend =====
+# Binaries
+apps/api/*.exe
+apps/api/*.exe~
+apps/api/*.dll
+apps/api/*.so
+apps/api/*.dylib
+apps/api/api
+apps/api/bin/
+apps/api/tmp/
+
+# Go test files
+*.test
+*.out
+
+# Go vendor
+apps/api/vendor/
+
+# Go build cache
+apps/api/.cache/
+
+# Air (hot reload) temp files
+apps/api/tmp/
+
+# ===== Next.js Frontend =====
+# Dependencies
+apps/web/node_modules/
+apps/web/.pnp
+apps/web/.pnp.js
+
+# Testing
+apps/web/coverage/
+
+# Next.js build output
+apps/web/.next/
+apps/web/out/
+
+# Production build
+apps/web/build/
+
+# Misc
+apps/web/.DS_Store
+apps/web/*.pem
+
+# Debug logs
+apps/web/npm-debug.log*
+apps/web/yarn-debug.log*
+apps/web/yarn-error.log*
+
+# Vercel
+apps/web/.vercel
+
+# TypeScript
+apps/web/*.tsbuildinfo
+apps/web/next-env.d.ts
+
+# ===== Docker =====
+# Docker volumes (data persistence)
+postgres_data/
+minio_data/
+
+# Docker logs
+*.log
+
+# ===== Database =====
+# Database backups
+*.sql.backup
+*.dump
+backup.sql
+
+# ===== MinIO / Object Storage =====
+# Local MinIO data
+data/
+
+# ===== IDE / Editor =====
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains IDEs (GoLand, WebStorm, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ===== Operating System =====
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ===== Temporary Files =====
+# General temp files
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# Scripts temp files
+scripts/bucket-policy.json
+
+# ===== Logs =====
+# Application logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===== Testing =====
+# Test coverage
+coverage/
+*.cover
+.coverage
+.coverage.*
+
+# ===== Build Artifacts =====
+# Compiled files
+dist/
+build/
+*.o
+*.a
+*.so
+
+# ===== Package Managers =====
+# npm
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Yarn
+yarn.lock
+.yarn/
+.yarn-integrity
+
+# pnpm
+pnpm-lock.yaml
+
+# ===== Security =====
+# Private keys
+*.pem
+*.key
+*.cert
+*.crt
+
+# Secrets
+secrets/
+.secrets
+
+# ===== Documentation =====
+# Generated docs (keep source docs)
+# docs/generated/
+
+# ===== Misc =====
+# Backup files
+*.backup
+*.old
+
+# Archive files (unless needed)
+# *.zip
+# *.tar
+# *.gz
+
+# ===== Keep These Files =====
+# Force include important files even if ignored by patterns above
+!.gitkeep
+!.env.example
+!README.md
+!Makefile
+!docker-compose.yml
