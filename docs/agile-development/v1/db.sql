@@ -130,6 +130,26 @@ CREATE INDEX idx_users_is_active ON users(is_active);
 CREATE INDEX idx_users_deleted_at ON users(deleted_at);
 
 -- ============================================================
+-- 5b. USER REFRESH TOKENS
+-- ============================================================
+-- Menyimpan refresh token untuk pengguna (mobile user).
+
+CREATE TABLE user_refresh_tokens (
+    id          UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID            NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash  VARCHAR(255)    NOT NULL,
+    user_agent  VARCHAR(500),
+    ip_address  VARCHAR(45),
+    expires_at  TIMESTAMPTZ     NOT NULL,
+    revoked_at  TIMESTAMPTZ,
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_refresh_tokens_user_id ON user_refresh_tokens(user_id);
+CREATE INDEX idx_user_refresh_tokens_token_hash ON user_refresh_tokens(token_hash);
+CREATE INDEX idx_user_refresh_tokens_expires_at ON user_refresh_tokens(expires_at);
+
+-- ============================================================
 -- 6. SEED DATA — BANKS
 -- ============================================================
 -- Daftar bank umum di Indonesia
@@ -247,7 +267,7 @@ INSERT INTO users (
     'Ahmad Fauzi',
     'ahmad@example.com',
     '081234567801',
-    '$2a$10$dummyhashahmad1234567890',
+    '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
     'users/profile/ahmad.jpg',
     TRUE,
     NOW(),
@@ -258,7 +278,7 @@ INSERT INTO users (
     'Rina Kartika',
     'rina@example.com',
     '081234567802',
-    '$2a$10$dummyhashrina1234567890',
+    '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
     'users/profile/rina.jpg',
     TRUE,
     NOW(),
@@ -269,7 +289,7 @@ INSERT INTO users (
     'Dimas Saputra',
     'dimas@example.com',
     '081234567803',
-    '$2a$10$dummyhashdimas1234567890',
+    '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
     'users/profile/dimas.jpg',
     TRUE,
     NOW(),
@@ -280,7 +300,7 @@ INSERT INTO users (
     'Putri Ayu',
     'putri@example.com',
     '081234567804',
-    '$2a$10$dummyhashputri1234567890',
+    '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
     'users/profile/putri.jpg',
     FALSE,
     NOW(),
@@ -291,7 +311,7 @@ INSERT INTO users (
     'Yoga Pratama',
     'yoga@example.com',
     '081234567805',
-    '$2a$10$dummyhashyoga1234567890',
+    '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
     'users/profile/yoga.jpg',
     TRUE,
     NOW(),

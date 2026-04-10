@@ -33,19 +33,29 @@ func AuthMiddleware(c fiber.Ctx) error {
 		return utils.UnauthorizedResponse(c, "Token tidak valid", "TOKEN_INVALID")
 	}
 
-	// Store admin ID and role in context
-	c.Locals("admin_id", claims.AdminID)
-	c.Locals("admin_role", claims.Role)
+	// Store user ID and role in context
+	c.Locals("user_id", claims.UserID)
+	c.Locals("user_role", claims.Role)
 
 	return c.Next()
 }
 
-// GetAdminID retrieves admin ID from context
-func GetAdminID(c fiber.Ctx) uuid.UUID {
-	return c.Locals("admin_id").(uuid.UUID)
+// GetUserID retrieves user ID from context
+func GetUserID(c fiber.Ctx) uuid.UUID {
+	return c.Locals("user_id").(uuid.UUID)
 }
 
-// GetAdminRole retrieves admin role from context
+// GetUserRole retrieves user role from context
+func GetUserRole(c fiber.Ctx) string {
+	return c.Locals("user_role").(string)
+}
+
+// Deprecated: use GetUserID instead
+func GetAdminID(c fiber.Ctx) uuid.UUID {
+	return GetUserID(c)
+}
+
+// Deprecated: use GetUserRole instead
 func GetAdminRole(c fiber.Ctx) string {
-	return c.Locals("admin_role").(string)
+	return GetUserRole(c)
 }

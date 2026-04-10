@@ -144,7 +144,7 @@ func Refresh(c fiber.Ctx) error {
 
 	// Get admin
 	var admin models.Admin
-	if err := config.DB.First(&admin, claims.AdminID).Error; err != nil {
+	if err := config.DB.First(&admin, claims.UserID).Error; err != nil {
 		return utils.UnauthorizedResponse(c, "Admin tidak ditemukan", "UNAUTHORIZED")
 	}
 
@@ -227,6 +227,110 @@ func Logout(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, "Logout berhasil", nil)
 }
 
+type UserLoginResponse struct {
+	AccessToken string      `json:"access_token"`
+	ExpiresIn   int         `json:"expires_in"`
+	TokenType   string      `json:"token_type"`
+	User        UserDetail  `json:"user"`
+}
+
+type UserDetail struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+// UserLogin authenticates mobile user and returns access token
+func UserLogin(c fiber.Ctx) error {
+	var req LoginRequest
+	if err := c.Bind().JSON(&req); err != nil {
+		return utils.ValidationErrorResponse(c, []utils.ErrorDetail{
+			{Field: "body", Message: "Invalid JSON format"},
+		})
+	}
+
+	// Validate input
+	if req.Email == "" || req.Password == "" {
+		details := []utils.ErrorDetail{}
+		if req.Email == "" {
+			details = append(details, utils.ErrorDetail{Field: "email", Message: "Email wajib diisi"})
+		}
+		if req.Password == "" {
+			details = append(details, utils.ErrorDetail{Field: "password", Message: "Password wajib diisi"})
+		}
+		return utils.ValidationErrorResponse(c, details)
+	}
+
+	// Find user by email
+	var user models.User
+	if err := config.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		return utils.UnauthorizedResponse(c, "Email atau password salah", "INVALID_CREDENTIALS")
+	}
+
+	// Check if user is active
+	if !user.IsActive {
+		return utils.ForbiddenResponse(c, "Akun anda tidak aktif, hubungi administrator")
+	}
+
+	// Verify password
+	if !utils.CheckPasswordHash(req.Password, user.PasswordHash) {
+		return utils.UnauthorizedResponse(c, "Email atau password salah", "INVALID_CREDENTIALS")
+	}
+
+	// Generate access token (Role is "user" for mobile users)
+	accessToken, err := utils.GenerateAccessToken(user.ID, "user")
+	if err != nil {
+		return utils.InternalErrorResponse(c, "Gagal membuat access token")
+	}
+
+	// Generate refresh token
+	refreshToken, err := utils.GenerateRefreshToken(user.ID)
+	if err != nil {
+		return utils.InternalErrorResponse(c, "Gagal membuat refresh token")
+	}
+
+	// Save refresh token to database
+	tokenHash := utils.HashToken(refreshToken)
+	userAgent := c.Get("User-Agent")
+	ipAddress := c.IP()
+	expiryDuration, _ := time.ParseDuration("168h") // 7 days
+
+	refreshTokenModel := models.UserRefreshToken{
+		UserID:    user.ID,
+		TokenHash: tokenHash,
+		UserAgent: &userAgent,
+		IPAddress: &ipAddress,
+		ExpiresAt: time.Now().Add(expiryDuration),
+	}
+
+	if err := config.DB.Create(&refreshTokenModel).Error; err != nil {
+		return utils.InternalErrorResponse(c, "Gagal menyimpan refresh token")
+	}
+
+	// Set refresh token as httpOnly cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "user_refresh_token",
+		Value:    refreshToken,
+		Path:     "/api/v1/user/auth",
+		HTTPOnly: true,
+		Secure:   false,
+		SameSite: "Strict",
+		MaxAge:   7 * 24 * 60 * 60,
+	})
+
+	// Return response
+	return utils.SuccessResponse(c, "Login berhasil", UserLoginResponse{
+		AccessToken: accessToken,
+		ExpiresIn:   900,
+		TokenType:   "Bearer",
+		User: UserDetail{
+			ID:    user.ID.String(),
+			Name:  user.Name,
+			Email: user.Email,
+		},
+	})
+}
+
 // GetCurrentAdmin returns current authenticated admin
 func GetCurrentAdmin(c fiber.Ctx) error {
 	adminID := middleware.GetAdminID(c)
@@ -244,5 +348,25 @@ func GetCurrentAdmin(c fiber.Ctx) error {
 		"is_active":  admin.IsActive,
 		"created_at": admin.CreatedAt,
 		"updated_at": admin.UpdatedAt,
+	})
+}
+
+// GetCurrentUser returns current authenticated mobile user
+func GetCurrentUser(c fiber.Ctx) error {
+	userID := middleware.GetUserID(c)
+
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		return utils.NotFoundResponse(c, "User tidak ditemukan")
+	}
+
+	return utils.SuccessResponse(c, "Data user berhasil diambil", fiber.Map{
+		"id":         user.ID,
+		"name":       user.Name,
+		"email":      user.Email,
+		"phone":      user.Phone,
+		"is_active":  user.IsActive,
+		"created_at": user.CreatedAt,
+		"updated_at": user.UpdatedAt,
 	})
 }

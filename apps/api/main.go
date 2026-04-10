@@ -55,6 +55,11 @@ func main() {
 	auth.Post("/logout", handlers.Logout)
 	auth.Get("/me", middleware.AuthMiddleware, handlers.GetCurrentAdmin)
 
+	// User Auth routes (mobile/Flutter)
+	userAuth := api.Group("/user/auth")
+	userAuth.Post("/login", handlers.UserLogin)
+	userAuth.Get("/me", middleware.AuthMiddleware, handlers.GetCurrentUser)
+
 	// Upload routes (protected) - accessible by master_admin and operation_admin
 	upload := api.Group("/upload", middleware.AuthMiddleware, middleware.RequireMasterOrOperation())
 	upload.Post("/presigned-url", handlers.GenerateUploadURL)
