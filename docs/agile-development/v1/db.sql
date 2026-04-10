@@ -251,69 +251,69 @@ CREATE TRIGGER trigger_users_updated_at
 --    Semua kolom timestamp menggunakan TIMESTAMPTZ (timezone-aware)
 --    untuk konsistensi global.
 
-INSERT INTO users (
-    id,
-    name,
-    email,
-    phone,
-    password_hash,
-    photo_profile_key,
-    is_active,
-    created_at,
-    updated_at
-) VALUES
-(
-    gen_random_uuid(),
-    'Ahmad Fauzi',
-    'ahmad@example.com',
-    '081234567801',
-    '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
-    'users/profile/ahmad.jpg',
-    TRUE,
-    NOW(),
-    NOW()
-),
-(
-    gen_random_uuid(),
-    'Rina Kartika',
-    'rina@example.com',
-    '081234567802',
-    '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
-    'users/profile/rina.jpg',
-    TRUE,
-    NOW(),
-    NOW()
-),
-(
-    gen_random_uuid(),
-    'Dimas Saputra',
-    'dimas@example.com',
-    '081234567803',
-    '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
-    'users/profile/dimas.jpg',
-    TRUE,
-    NOW(),
-    NOW()
-),
-(
-    gen_random_uuid(),
-    'Putri Ayu',
-    'putri@example.com',
-    '081234567804',
-    '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
-    'users/profile/putri.jpg',
-    FALSE,
-    NOW(),
-    NOW()
-),
-(
-    gen_random_uuid(),
-    'Yoga Pratama',
-    'yoga@example.com',
-    '081234567805',
-    '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
-    'users/profile/yoga.jpg',
-    TRUE,
-    NOW(),
-    NOW()
-);
+-- INSERT INTO users (
+--     id,
+--     name,
+--     email,
+--     phone,
+--     password_hash,
+--     photo_profile_key,
+--     is_active,
+--     created_at,
+--     updated_at
+-- ) VALUES
+-- (
+--     gen_random_uuid(),
+--     'Ahmad Fauzi',
+--     'ahmad@example.com',
+--     '081234567801',
+--     '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
+--     'users/profile/ahmad.jpg',
+--     TRUE,
+--     NOW(),
+--     NOW()
+-- ),
+-- (
+--     gen_random_uuid(),
+--     'Rina Kartika',
+--     'rina@example.com',
+--     '081234567802',
+--     '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
+--     'users/profile/rina.jpg',
+--     TRUE,
+--     NOW(),
+--     NOW()
+-- ),
+-- (
+--     gen_random_uuid(),
+--     'Dimas Saputra',
+--     'dimas@example.com',
+--     '081234567803',
+--     '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
+--     'users/profile/dimas.jpg',
+--     TRUE,
+--     NOW(),
+--     NOW()
+-- ),
+-- (
+--     gen_random_uuid(),
+--     'Putri Ayu',
+--     'putri@example.com',
+--     '081234567804',
+--     '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
+--     'users/profile/putri.jpg',
+--     FALSE,
+--     NOW(),
+--     NOW()
+-- ),
+-- (
+--     gen_random_uuid(),
+--     'Yoga Pratama',
+--     'yoga@example.com',
+--     '081234567805',
+--     '$2a$12$V/cPhOf3rnixcFskxCUy/OsFSgmRura4SehRWMVUO6pM3toKaFqbq',
+--     'users/profile/yoga.jpg',
+--     TRUE,
+--     NOW(),
+--     NOW()
+-- );
