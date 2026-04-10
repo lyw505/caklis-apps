@@ -4,7 +4,7 @@ Platform admin dashboard untuk mengelola sistem transportasi becak listrik CAKLI
 
 **Status:** 🟢 MVP Complete (100%)
 
-**📖 New to this project? Start here:** [START-HERE.md](START-HERE.md)
+**📖 New to this project? Start here:** [QUICK-SETUP.md](QUICK-SETUP.md) | [Prerequisites](docs/PREREQUISITES.md)
 
 ---
 
@@ -102,10 +102,23 @@ Platform admin dashboard untuk mengelola sistem transportasi becak listrik CAKLI
 
 ### Prerequisites
 
-- Go 1.25+
-- Node.js 18+
-- Docker & Docker Compose
-- Make (optional, for convenience)
+Before starting, make sure you have these installed:
+- **Docker Desktop** - For PostgreSQL and MinIO containers
+- **Go 1.21+** - For backend development
+- **Node.js 18+** - For frontend development
+- **Git** - For version control
+- **Make** (optional) - For convenience commands
+
+**📖 Detailed installation guide:** [PREREQUISITES.md](docs/PREREQUISITES.md)
+
+**Quick verification:**
+```bash
+docker --version && docker-compose --version
+go version
+node --version && npm --version
+git --version
+make --version  # optional
+```
 
 ### 1. Clone Repository
 
@@ -122,24 +135,32 @@ make dev
 ```
 
 This will:
-1. Start PostgreSQL and MinIO containers
-2. Start backend API with hot reload
-3. Start frontend development server
+1. Start PostgreSQL, MinIO, and Backend API containers
+2. Wait for services to be ready (5 seconds)
+3. Initialize database schema
+4. Seed database with default data
+5. **Automatically configure MinIO bucket policy** ✨
+6. Sync environment variables
+7. Start frontend development server
 
-### 3. Configure MinIO (First Time Only)
+**No manual MinIO setup needed!** Everything is automatic. 🎉
 
-After starting services for the first time, configure MinIO bucket:
+### 3. Manual MinIO Fix (Only If Needed)
+
+If you start containers manually (not using `make dev`), you may need to configure MinIO:
 
 ```bash
-make setup-minio
+make fix-upload
 ```
 
-This will:
-- Create `cakli` bucket if not exists
-- Set bucket policy to allow uploads
-- Enable presigned URL functionality
+This is **NOT needed** if you use `make dev` - it's automatic!
 
-**Note:** This step is required for file upload features (driver photos, user profile pictures) to work properly.
+**When to use:**
+- After device restart (if not using `make dev`)
+- If you run `docker-compose up -d` directly
+- If upload suddenly stops working
+
+See [Auto MinIO Setup Guide](docs/AUTO-MINIO-SETUP.md) for details.
 
 ### 3. Manual Setup (Alternative)
 
@@ -612,6 +633,7 @@ docker-compose up -d
 ## 📚 Documentation
 
 ### Quick References
+- [📦 Prerequisites & Installation](docs/PREREQUISITES.md) - Required software & dependencies
 - [🚀 Quick Start Guide](QUICK-START.md) - Get started in 3 commands
 - [📊 Current Status](docs/CURRENT-STATUS.md) - Complete feature list & status
 - [📝 Makefile Guide](MAKEFILE-GUIDE.md) - All available make commands

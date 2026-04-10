@@ -56,7 +56,7 @@ func GeneratePresignedUploadURL(filename, contentType, folder string) (*Presigne
 	bucketName := "cakli"
 	expiry := 15 * time.Minute
 
-	presignedURL, err := config.MinioClient.PresignedPutObject(ctx, bucketName, objectKey, expiry)
+	presignedURL, err := config.GetMinioClient().PresignedPutObject(ctx, bucketName, objectKey, expiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate presigned URL: %v", err)
 	}
@@ -82,14 +82,14 @@ func GeneratePresignedViewURL(objectKey string) (*PresignedViewResponse, error) 
 	bucketName := "cakli"
 
 	// Check if object exists
-	_, err := config.MinioClient.StatObject(ctx, bucketName, objectKey, minio.StatObjectOptions{})
+	_, err := config.GetMinioClient().StatObject(ctx, bucketName, objectKey, minio.StatObjectOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("file not found")
 	}
 
 	// Generate presigned GET URL (1 hour expiry)
 	expiry := 1 * time.Hour
-	presignedURL, err := config.MinioClient.PresignedGetObject(ctx, bucketName, objectKey, expiry, nil)
+	presignedURL, err := config.GetMinioClient().PresignedGetObject(ctx, bucketName, objectKey, expiry, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate presigned URL: %v", err)
 	}
@@ -114,7 +114,7 @@ func GeneratePresignedViewURLForKey(objectKey string) string {
 	bucketName := "cakli"
 	expiry := 1 * time.Hour
 
-	presignedURL, err := config.MinioClient.PresignedGetObject(ctx, bucketName, objectKey, expiry, nil)
+	presignedURL, err := config.GetMinioClient().PresignedGetObject(ctx, bucketName, objectKey, expiry, nil)
 	if err != nil {
 		return ""
 	}

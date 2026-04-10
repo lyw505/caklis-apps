@@ -16,7 +16,7 @@ services:
   minio:
     image: minio/minio:latest
     container_name: cakli-storage
-    command: server /data --console-address ":9001"
+    entrypoint: /scripts/minio-entrypoint.sh
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -25,6 +25,7 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
     volumes:
       - minio_data:/data
+      - ./scripts/minio-entrypoint.sh:/scripts/minio-entrypoint.sh:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
@@ -46,6 +47,7 @@ services:
       - DB_NAME=cakli_db
       - DB_SSLMODE=disable
       - MINIO_ENDPOINT=minio:9000
+      - MINIO_EXTERNAL_ENDPOINT=host.docker.internal:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_BUCKET=cakli

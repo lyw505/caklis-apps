@@ -1,7 +1,7 @@
 # CAKLI Makefile — Task Automation
 # Project: CAKLI Web Admin v1
 
-.PHONY: dev up down build logs seed clean setup-minio db-init
+.PHONY: dev up down build logs seed clean setup-minio fix-upload db-init
 
 # Default: Show help
 help:
@@ -12,22 +12,32 @@ help:
 	@echo "  make build       - Rebuild Docker images"
 	@echo "  make logs        - Show follow logs for all Docker services"
 	@echo "  make seed        - Run database seeders"
-	@echo "  make setup-minio - Configure MinIO bucket policy"
+	@echo "  make setup-minio - Configure MinIO bucket policy (first time)"
+	@echo "  make fix-upload  - Fix upload after restart (run after every restart)"
 	@echo "  make clean       - Remove build artifacts and temp files"
 
 # ── Development ──
 
 # make dev: Implement Section 4 of PRD
 # 1. Start Docker services (postgres, minio, api with air)
-# 2. Sync .env to web apps
-# 3. Start Next.js frontend locally
+# 2. Initialize database and seed data
+# 3. Configure MinIO bucket policy (auto-fix upload)
+# 4. Sync .env to web apps
+# 5. Start Next.js frontend locally
 dev:
 	@echo "🚀 Starting CAKLI development stack..."
 	docker compose up -d --build postgres minio backend-api
+	@echo "⏳ Waiting for services to be ready..."
+	@powershell -Command "Start-Sleep -Seconds 5"
 	$(MAKE) db-init
 	$(MAKE) seed
+	@echo "🔧 Configuring MinIO bucket policy..."
+	@docker exec cakli-storage mc alias set local http://localhost:9000 minioadmin minioadmin >nul 2>&1
+	@docker exec cakli-storage mc mb local/cakli --ignore-existing >nul 2>&1
+	@docker exec cakli-storage mc anonymous set public local/cakli >nul 2>&1
+	@echo "✅ MinIO configured!"
 	@echo "📋 Syncing environment variables to web-admin..."
-	powershell -Command "Copy-Item .env ./apps/web/.env.local -Force; (Get-Content ./apps/web/.env.local) -replace 'API_INTERNAL_URL=http://api:8080', 'API_INTERNAL_URL=http://localhost:8080' | Set-Content ./apps/web/.env.local"
+	@powershell -Command "Copy-Item .env ./apps/web/.env.local -Force; (Get-Content ./apps/web/.env.local) -replace 'API_INTERNAL_URL=http://api:8080', 'API_INTERNAL_URL=http://localhost:8080' | Set-Content ./apps/web/.env.local"
 	@echo "🌐 Starting Frontend (Next.js)..."
 	cd apps/web && npm run dev
 
@@ -59,6 +69,13 @@ seed:
 setup-minio:
 	@echo "🔧 Configuring MinIO bucket policy..."
 	powershell -ExecutionPolicy Bypass -File ./scripts/setup-minio.ps1
+
+fix-upload:
+	@echo "🔧 Fixing upload issue (setting bucket policy)..."
+	@docker exec cakli-storage mc alias set local http://localhost:9000 minioadmin minioadmin >nul 2>&1
+	@docker exec cakli-storage mc mb local/cakli --ignore-existing >nul 2>&1
+	@docker exec cakli-storage mc anonymous set public local/cakli >nul 2>&1
+	@echo "✅ Upload should work now!"
 
 db-init:
 	@echo "⏳ Waiting for database to be ready..."
