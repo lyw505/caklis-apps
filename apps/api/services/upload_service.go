@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -53,10 +54,18 @@ func GeneratePresignedUploadURL(filename, contentType, folder string) (*Presigne
 
 	// Generate presigned PUT URL (15 minutes expiry)
 	ctx := context.Background()
-	bucketName := "cakli"
+	bucketName := os.Getenv("MINIO_BUCKET")
+	if bucketName == "" {
+		bucketName = "cakli"
+	}
 	expiry := 15 * time.Minute
 
-	presignedURL, err := config.GetMinioClient().PresignedPutObject(ctx, bucketName, objectKey, expiry)
+	client := config.GetExternalMinioClient()
+	if client == nil {
+		return nil, fmt.Errorf("external minio client is not initialized")
+	}
+
+	presignedURL, err := client.PresignedPutObject(ctx, bucketName, objectKey, expiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate presigned URL: %v", err)
 	}
@@ -75,7 +84,10 @@ func GeneratePresignedViewURL(objectKey string) (*PresignedViewResponse, error) 
 	}
 
 	ctx := context.Background()
-	bucketName := "cakli"
+	bucketName := os.Getenv("MINIO_BUCKET")
+	if bucketName == "" {
+		bucketName = "cakli"
+	}
 
 	// Check if object exists
 	_, err := config.GetMinioClient().StatObject(ctx, bucketName, objectKey, minio.StatObjectOptions{})
@@ -85,7 +97,7 @@ func GeneratePresignedViewURL(objectKey string) (*PresignedViewResponse, error) 
 
 	// Generate presigned GET URL (1 hour expiry)
 	expiry := 1 * time.Hour
-	presignedURL, err := config.GetMinioClient().PresignedGetObject(ctx, bucketName, objectKey, expiry, nil)
+	presignedURL, err := config.GetExternalMinioClient().PresignedGetObject(ctx, bucketName, objectKey, expiry, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate presigned URL: %v", err)
 	}
@@ -103,19 +115,18 @@ func GeneratePresignedViewURLForKey(objectKey string) string {
 	}
 
 	ctx := context.Background()
-	bucketName := "cakli"
+	bucketName := os.Getenv("MINIO_BUCKET")
+	if bucketName == "" {
+		bucketName = "cakli"
+	}
 	expiry := 1 * time.Hour
 
-	presignedURL, err := config.GetMinioClient().PresignedGetObject(ctx, bucketName, objectKey, expiry, nil)
+	presignedURL, err := config.GetExternalMinioClient().PresignedGetObject(ctx, bucketName, objectKey, expiry, nil)
 	if err != nil {
 		return ""
 	}
 
-	// Replace internal Docker hostname with localhost for browser access
-	urlString := presignedURL.String()
-	urlString = strings.Replace(urlString, "minio:9000", "localhost:9000", 1)
-
-	return urlString
+	return presignedURL.String()
 }
 
 // ValidateContentType checks if content type is valid

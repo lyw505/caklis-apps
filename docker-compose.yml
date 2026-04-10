@@ -47,7 +47,7 @@ services:
       - DB_NAME=cakli_db
       - DB_SSLMODE=disable
       - MINIO_ENDPOINT=minio:9000
-      - MINIO_EXTERNAL_ENDPOINT=host.docker.internal:9000
+      - MINIO_EXTERNAL_ENDPOINT=localhost:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_BUCKET=cakli

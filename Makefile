@@ -31,12 +31,13 @@ dev:
 	@echo "🚀 Starting CAKLI development stack..."
 	docker compose up -d --build postgres minio backend-api
 	@echo "⏳ Waiting for services to be ready..."
-	@powershell -Command "Start-Sleep -Seconds 5"
+	@powershell -Command "& { $$count = 0; while ($$count -lt 60) { $$status = (docker inspect -f '{{.State.Running}}' cakli-storage); if ($$status -eq 'true') { break }; Start-Sleep -Seconds 1; $$count++ }; if ($$status -ne 'true') { Write-Error 'cakli-storage container did not start in time.' } }"
+	@powershell -Command "& { $$count = 0; while ($$count -lt 30) { docker exec cakli-db pg_isready -U cakli -d cakli_db -q; if ($$LASTEXITCODE -eq 0){ break }; Start-Sleep -Seconds 1 }; $$count++ }"
 	$(MAKE) db-init
 	@echo "🔧 Configuring MinIO bucket policy..."
-	@docker exec cakli-storage mc alias set local http://localhost:9000 minioadmin minioadmin >nul 2>&1
-	@docker exec cakli-storage mc mb local/cakli --ignore-existing >nul 2>&1
-	@docker exec cakli-storage mc anonymous set public local/cakli >nul 2>&1
+	@powershell -Command "docker exec cakli-storage mc alias set local http://localhost:9000 minioadmin minioadmin | Out-Null"
+	@powershell -Command "docker exec cakli-storage mc mb local/cakli --ignore-existing | Out-Null"
+	@powershell -Command "docker exec cakli-storage mc anonymous set public local/cakli | Out-Null"
 	@echo "✅ MinIO configured!"
 	@echo "📋 Syncing environment variables to web-admin..."
 	@powershell -Command "Copy-Item .env ./apps/web/.env.local -Force; (Get-Content ./apps/web/.env.local) -replace 'API_INTERNAL_URL=http://api:8080', 'API_INTERNAL_URL=http://localhost:8080' | Set-Content ./apps/web/.env.local"
@@ -64,8 +65,10 @@ logs:
 # ── Database ──
 
 db-init:
+	@echo "⏳ Waiting for database container to be ready..."
+	@powershell -Command "$$count = 0; while ($$count -lt 30) { $$status = (docker inspect -f '{{.State.Running}}' cakli-db); if ($$status -eq 'true') { break }; Start-Sleep -Seconds 1; $$count++ }; if ($$status -ne 'true') { Write-Error 'cakli-db container did not start in time.' }"
 	@echo "⏳ Waiting for database to be ready..."
-	@powershell -Command "$max=30; for($i=0;$i -lt $max;$i++){ docker exec cakli-db pg_isready -U cakli -d cakli_db -q; if($LASTEXITCODE -eq 0){ break }; Start-Sleep -Seconds 1 }"
+	@powershell -Command "$$count = 0; while ($$count -lt 30) { docker exec cakli-db pg_isready -U cakli -d cakli_db -q; if ($$LASTEXITCODE -eq 0) { break }; Start-Sleep -Seconds 1; $$count++ }"
 	@echo "🗄️ Initializing database schema (if needed)..."
 	docker cp ./docs/agile-development/v1/db.sql cakli-db:/db.sql
 	docker exec cakli-db sh -lc "psql -U cakli -d cakli_db -tAc \"SELECT to_regclass('public.admins') IS NOT NULL\" | grep -qi t || psql -U cakli -d cakli_db -v ON_ERROR_STOP=0 -f /db.sql"
@@ -103,13 +106,7 @@ fix-upload:
 	@docker exec cakli-storage mc anonymous set public local/cakli >nul 2>&1
 	@echo "✅ Upload should work now!"
 
-db-init:
-	@echo "⏳ Waiting for database to be ready..."
-	@powershell -Command "$$max=30; for($$i=0;$$i -lt $$max;$$i++){ docker exec cakli-db pg_isready -U cakli -d cakli_db -q; if($$LASTEXITCODE -eq 0){ break }; Start-Sleep -Seconds 1 }"
-	@echo "🗄️ Initializing database schema (if needed)..."
-	docker cp ./docs/agile-development/v1/db.sql cakli-db:/db.sql
-	docker exec cakli-db sh -lc "psql -U cakli -d cakli_db -tAc \"SELECT to_regclass('public.admins') IS NOT NULL\" | grep -qi t || psql -U cakli -d cakli_db -v ON_ERROR_STOP=0 -f /db.sql"
-	docker exec cakli-db rm /db.sql
+
 
 # ── Cleanup ──
 

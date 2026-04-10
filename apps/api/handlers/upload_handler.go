@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"log"
+
 	"github.com/aul-pkl/cakli/backend/services"
 	"github.com/aul-pkl/cakli/backend/utils"
 	"github.com/gofiber/fiber/v3"
@@ -47,7 +49,8 @@ func GenerateUploadURL(c fiber.Ctx) error {
 	// Generate presigned URL
 	result, err := services.GeneratePresignedUploadURL(req.Filename, req.ContentType, req.Folder)
 	if err != nil {
-		return utils.InternalErrorResponse(c, err.Error())
+		log.Printf("ERROR GenerateUploadURL: %v", err)
+		return utils.InternalErrorResponse(c, "Gagal membuat URL upload: "+err.Error())
 	}
 
 	return utils.SuccessResponse(c, "Presigned URL berhasil dibuat", result)

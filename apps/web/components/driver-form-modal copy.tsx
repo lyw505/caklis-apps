@@ -70,25 +70,6 @@ export function DriverFormModal({ open, onOpenChange, driver, onSuccess }: Drive
     const [photoFace, setPhotoFace] = useState<File | null>(null)
     const [uploading, setUploading] = useState(false)
 
-    const handleAutoFill = () => {
-        const randomNum = Math.floor(Math.random() * 1000)
-        const randomNIK = "3171" + Math.floor(100000000000 + Math.random() * 899999999999).toString()
-        const randomPhone = "0812" + Math.floor(10000000 + Math.random() * 89999999).toString()
-        
-        setFormData({
-            name: `Test Driver ${randomNum}`,
-            email: `driver${randomNum}@example.com`,
-            password: "password123",
-            phone: randomPhone,
-            nik: randomNIK.substring(0, 16),
-            birth_place: "Jakarta",
-            birth_date: "1990-01-01",
-            verification_status: "pending",
-            bank_id: banks.length > 0 ? banks[0].id : undefined,
-            bank_account_number: "1234567890",
-        })
-    }
-
     useEffect(() => {
         if (open) {
             fetchBanks()
@@ -223,25 +204,10 @@ export function DriverFormModal({ open, onOpenChange, driver, onSuccess }: Drive
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <DialogTitle>{driver ? "Edit Driver" : "Tambah Driver Baru"}</DialogTitle>
-                            <DialogDescription>
-                                {driver ? "Update informasi driver" : "Lengkapi form untuk menambahkan driver baru"}
-                            </DialogDescription>
-                        </div>
-                        {!driver && (
-                            <Button 
-                                type="button" 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={handleAutoFill}
-                                className="mr-6 border-[#E04D04] text-[#E04D04] hover:bg-[#E04D04] hover:text-white"
-                            >
-                                Auto Fill (Test)
-                            </Button>
-                        )}
-                    </div>
+                    <DialogTitle>{driver ? "Edit Driver" : "Tambah Driver Baru"}</DialogTitle>
+                    <DialogDescription>
+                        {driver ? "Update informasi driver" : "Lengkapi form untuk menambahkan driver baru"}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -381,7 +347,7 @@ export function DriverFormModal({ open, onOpenChange, driver, onSuccess }: Drive
                             <Input
                                 id="password"
                                 type="password"
-                                value={formData.password ?? ""}
+                                value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 placeholder={driver ? "Kosongkan jika tidak diubah" : ""}
                                 required={!driver}
@@ -448,8 +414,8 @@ export function DriverFormModal({ open, onOpenChange, driver, onSuccess }: Drive
                         <div className="space-y-2">
                             <Label htmlFor="bank_id">Bank</Label>
                             <Select
-                                value={formData.bank_id?.toString() ?? ""}
-                                onValueChange={(value) => setFormData({ ...formData, bank_id: value ? parseInt(value) : undefined })}
+                                value={formData.bank_id?.toString()}
+                                onValueChange={(value) => setFormData({ ...formData, bank_id: parseInt(value) })}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih bank" />
@@ -468,7 +434,7 @@ export function DriverFormModal({ open, onOpenChange, driver, onSuccess }: Drive
                             <Label htmlFor="bank_account_number">No. Rekening</Label>
                             <Input
                                 id="bank_account_number"
-                                value={formData.bank_account_number ?? ""}
+                                value={formData.bank_account_number}
                                 onChange={(e) => setFormData({ ...formData, bank_account_number: e.target.value })}
                             />
                         </div>
