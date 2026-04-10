@@ -137,15 +137,31 @@ make dev
 This will:
 1. Start PostgreSQL, MinIO, and Backend API containers
 2. Wait for services to be ready (5 seconds)
-3. Initialize database schema
-4. Seed database with default data
-5. **Automatically configure MinIO bucket policy** ✨
-6. Sync environment variables
-7. Start frontend development server
+3. Initialize database schema (if not exists)
+4. **Automatically configure MinIO bucket policy** ✨
+5. Sync environment variables
+6. Start frontend development server
 
 **No manual MinIO setup needed!** Everything is automatic. 🎉
 
-### 3. Manual MinIO Fix (Only If Needed)
+### 3. Seed Database (First Time Only)
+
+After first `make dev`, seed the database with default data:
+
+```bash
+make db-seed
+```
+
+This will create:
+- 3 admin accounts (master, operation, reporting)
+- 22 Indonesian banks
+
+**Default Admin Credentials:**
+- Master Admin: `master@cakli.id` / `admin123`
+- Operation Admin: `operation@cakli.id` / `admin123`
+- Reporting Admin: `reporting@cakli.id` / `admin123`
+
+### 4. Manual MinIO Fix (Only If Needed)
 
 If you start containers manually (not using `make dev`), you may need to configure MinIO:
 

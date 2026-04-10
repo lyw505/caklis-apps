@@ -61,12 +61,8 @@ func GeneratePresignedUploadURL(filename, contentType, folder string) (*Presigne
 		return nil, fmt.Errorf("failed to generate presigned URL: %v", err)
 	}
 
-	// Replace internal Docker hostname with localhost for browser access
-	urlString := presignedURL.String()
-	urlString = strings.Replace(urlString, "minio:9000", "localhost:9000", 1)
-
 	return &PresignedUploadResponse{
-		UploadURL: urlString,
+		UploadURL: presignedURL.String(),
 		ObjectKey: objectKey,
 		ExpiresIn: 900, // 15 minutes in seconds
 	}, nil
@@ -94,12 +90,8 @@ func GeneratePresignedViewURL(objectKey string) (*PresignedViewResponse, error) 
 		return nil, fmt.Errorf("failed to generate presigned URL: %v", err)
 	}
 
-	// Replace internal Docker hostname with localhost for browser access
-	urlString := presignedURL.String()
-	urlString = strings.Replace(urlString, "minio:9000", "localhost:9000", 1)
-
 	return &PresignedViewResponse{
-		ViewURL:   urlString,
+		ViewURL:   presignedURL.String(),
 		ExpiresIn: 3600, // 1 hour in seconds
 	}, nil
 }
