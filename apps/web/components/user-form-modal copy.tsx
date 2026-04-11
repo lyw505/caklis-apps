@@ -67,16 +67,6 @@ export function UserFormModal({ open, onOpenChange, user, onSuccess }: UserFormM
         setPhotoProfile(null)
     }
 
-    const autoFillForm = () => {
-        const timestamp = Date.now().toString().slice(-4)
-        setFormData({
-            name: `User Test ${timestamp}`,
-            email: `test${timestamp}@example.com`,
-            password: "password123",
-            phone: `08123456${timestamp}`,
-        })
-    }
-
     const uploadFile = async (file: File): Promise<string> => {
         try {
             // Get presigned upload URL
@@ -242,11 +232,6 @@ export function UserFormModal({ open, onOpenChange, user, onSuccess }: UserFormM
                     </div>
 
                     <DialogFooter>
-                        {!user && (
-                            <Button type="button" variant="secondary" onClick={autoFillForm} disabled={loading}>
-                                Isi Otomatis
-                            </Button>
-                        )}
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
                             Batal
                         </Button>

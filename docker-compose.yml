@@ -1,3 +1,72 @@
+# version: '3.8'
+
+# services:
+#   postgres:
+#     image: postgres:15-alpine
+#     container_name: cakli-db
+#     environment:
+#       POSTGRES_USER: cakli
+#       POSTGRES_PASSWORD: cakli_secret
+#       POSTGRES_DB: cakli_db
+#     ports:
+#       - "5433:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+
+#   minio:
+#     image: minio/minio:latest
+#     container_name: cakli-storage
+#     entrypoint: /scripts/minio-entrypoint.sh
+#     ports:
+#       - "9000:9000"
+#       - "9001:9001"
+#     environment:
+#       MINIO_ROOT_USER: minioadmin
+#       MINIO_ROOT_PASSWORD: minioadmin
+#     volumes:
+#       - minio_data:/data
+#       - ./scripts/minio-entrypoint.sh:/scripts/minio-entrypoint.sh:ro
+#     healthcheck:
+#       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+
+#   backend-api:
+#     build:
+#       context: ./apps/api
+#       dockerfile: ../../infra/docker/api.Dockerfile
+#     container_name: cakli-api
+#     ports:
+#       - "8080:8080"
+#     environment:
+#       - DB_HOST=postgres
+#       - DB_PORT=5432
+#       - DB_USER=cakli
+#       - DB_PASSWORD=cakli_secret
+#       - DB_NAME=cakli_db
+#       - DB_SSLMODE=disable
+#       - MINIO_ENDPOINT=minio:9000
+#       - MINIO_EXTERNAL_ENDPOINT=localhost:9000
+#       - MINIO_ACCESS_KEY=minioadmin
+#       - MINIO_SECRET_KEY=minioadmin
+#       - MINIO_BUCKET=cakli
+#       - MINIO_USE_SSL=false
+#       - JWT_ACCESS_SECRET=your-access-secret-key-change-in-production
+#       - JWT_REFRESH_SECRET=your-refresh-secret-key-change-in-production
+#       - JWT_ACCESS_EXPIRY=15m
+#       - JWT_REFRESH_EXPIRY=168h
+#       - API_PORT=8080
+#       - API_ENV=development
+#     depends_on:
+#       - postgres
+#       - minio
+
+# volumes:
+#   postgres_data:
+#   minio_data:
+
+
 version: '3.8'
 
 services:
@@ -14,9 +83,10 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   minio:
-    image: minio/minio:latest
+    build:
+      context: .
+      dockerfile: infra/docker/minio.Dockerfile
     container_name: cakli-storage
-    entrypoint: /scripts/minio-entrypoint.sh
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -25,7 +95,6 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
     volumes:
       - minio_data:/data
-      - ./scripts/minio-entrypoint.sh:/scripts/minio-entrypoint.sh:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
