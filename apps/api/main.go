@@ -8,32 +8,53 @@ import (
 	"github.com/aul-pkl/cakli/backend/handlers"
 	"github.com/aul-pkl/cakli/backend/middleware"
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/logger"
+	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/joho/godotenv"
 )
 
 func main() {
+	log.Println("🛠️ Starting CAKLI Backend...")
+
 	// Load .env
 	if err := godotenv.Load(".env"); err != nil {
-		log.Println("No .env file found, trying root .env")
+		log.Println("ℹ️ No .env file found in current directory, trying root...")
 		if err := godotenv.Load("../../.env"); err != nil {
-			log.Println("Warning: No .env file found")
+			log.Println("⚠️ Warning: No .env file found anywhere. Using system environment variables.")
 		}
 	}
 
+	// Print some important env vars for debugging (BE CAREFUL NOT TO PRINT SECRETS IN PROD)
+	log.Printf("📍 DB_HOST: %s", os.Getenv("DB_HOST"))
+	log.Printf("📍 DB_PORT: %s", os.Getenv("DB_PORT"))
+	log.Printf("📍 API_PORT: %s", os.Getenv("API_PORT"))
+
 	// Connect to database
+	log.Printf("🔗 Connecting to database at %s:%s...", os.Getenv("DB_HOST"), os.Getenv("DB_PORT"))
 	config.ConnectDatabase()
 
 	// Connect to MinIO
+	log.Printf("☁️ Connecting to MinIO at %s...", os.Getenv("MINIO_ENDPOINT"))
 	config.ConnectMinio()
 
 	app := fiber.New(fiber.Config{
 		AppName: "CAKLI v1 API",
 	})
 
-	// CORS middleware
+	log.Println("🚀 Initializing middleware and routes...")
+
+	// 1. Recovery middleware (MUST BE FIRST)
+	app.Use(recover.New(recover.Config{
+		EnableStackTrace: true,
+	}))
+
+	// 2. Logger middleware
+	app.Use(logger.New())
+
+	// 3. CORS middleware
 	app.Use(middleware.CORSMiddleware())
 
-	// API routes
+	// 4. API routes
 	api := app.Group("/api/v1")
 
 	// Health check
@@ -54,6 +75,16 @@ func main() {
 	auth.Post("/refresh", handlers.Refresh)
 	auth.Post("/logout", handlers.Logout)
 	auth.Get("/me", middleware.AuthMiddleware, handlers.GetCurrentAdmin)
+
+	// User auth routes (public)
+	userAuth := api.Group("/user/auth")
+	userAuth.Post("/login", handlers.LoginUser)
+	userAuth.Get("/me", middleware.AuthMiddleware, handlers.GetCurrentUser)
+
+	// Driver auth routes (public)
+	driverAuth := api.Group("/driver/auth")
+	driverAuth.Post("/login", handlers.LoginDriver)
+	driverAuth.Get("/me", middleware.AuthMiddleware, handlers.GetCurrentDriver)
 
 	// Upload routes (protected) - accessible by master_admin and operation_admin
 	upload := api.Group("/upload", middleware.AuthMiddleware, middleware.RequireMasterOrOperation())
@@ -91,6 +122,6 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("🚀 Server starting on port %s", port)
-	log.Fatal(app.Listen(":" + port))
+	log.Printf("🚀 CAKLI v1 API is ready and starting on 0.0.0.0:%s", port)
+	log.Fatal(app.Listen("0.0.0.0:" + port))
 }

@@ -11,23 +11,23 @@ import (
 )
 
 type AccessTokenClaims struct {
-	AdminID uuid.UUID `json:"admin_id"`
-	Role    string    `json:"role"`
+	UserID uuid.UUID `json:"user_id"`
+	Role   string    `json:"role"`
 	jwt.RegisteredClaims
 }
 
 type RefreshTokenClaims struct {
-	AdminID uuid.UUID `json:"admin_id"`
+	UserID uuid.UUID `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
 // GenerateAccessToken creates a new access token (15 minutes)
-func GenerateAccessToken(adminID uuid.UUID, role string) (string, error) {
+func GenerateAccessToken(userID uuid.UUID, role string) (string, error) {
 	expiryDuration, _ := time.ParseDuration(os.Getenv("JWT_ACCESS_EXPIRY"))
 	
 	claims := AccessTokenClaims{
-		AdminID: adminID,
-		Role:    role,
+		UserID: userID,
+		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiryDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -39,11 +39,11 @@ func GenerateAccessToken(adminID uuid.UUID, role string) (string, error) {
 }
 
 // GenerateRefreshToken creates a new refresh token (7 days)
-func GenerateRefreshToken(adminID uuid.UUID) (string, error) {
+func GenerateRefreshToken(userID uuid.UUID) (string, error) {
 	expiryDuration, _ := time.ParseDuration(os.Getenv("JWT_REFRESH_EXPIRY"))
 	
 	claims := RefreshTokenClaims{
-		AdminID: adminID,
+		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiryDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

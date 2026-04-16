@@ -108,6 +108,8 @@ services:
     container_name: cakli-api
     ports:
       - "8080:8080"
+    volumes:
+      - ./apps/api:/app
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432

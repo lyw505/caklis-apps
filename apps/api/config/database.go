@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/aul-pkl/cakli/backend/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -38,6 +39,21 @@ func ConnectDatabase() {
 	}
 
 	log.Println("✅ Database connected successfully")
+
+	// Auto Migration
+	log.Println("🔄 Running auto migration...")
+	err = DB.AutoMigrate(
+		&models.Admin{},
+		&models.User{},
+		&models.Driver{},
+		&models.RefreshToken{},
+		&models.Bank{},
+	)
+	if err != nil {
+		log.Println("❌ Auto migration failed:", err)
+	} else {
+		log.Println("✅ Auto migration completed")
+	}
 }
 
 func GetDB() *gorm.DB {
