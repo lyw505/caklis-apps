@@ -215,6 +215,18 @@ export default function DriversPage() {
         active: drivers.filter(d => d.is_active).length,
     }
 
+    const hadleDelete = async (id: string) => {
+        if (!confirm("Apakah anda yakin menghapus driver ini ?")) return
+
+        try {
+            await api.delete(`/admin/drivers/${id}`)
+            toast.success("Driver berhasil dihapus")
+            fetchDrivers()
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Gagal menghapus driver")
+        }
+    }
+
     return (
         <div className="min-h-screen p-4 md:p-6 bg-white">
             <div className="max-w-[1400px] mx-auto space-y-4">
@@ -369,7 +381,7 @@ export default function DriversPage() {
                                                         Edit Driver
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem>Lihat Detail</DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-red-600">Hapus</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => hadleDelete(driver.id)} className="text-red-600">Hapus</DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>

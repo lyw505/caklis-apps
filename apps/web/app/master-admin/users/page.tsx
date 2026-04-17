@@ -135,6 +135,18 @@ export default function UsersPage() {
         setPage(1)
     }
 
+    const hadleDelete = async (id: string) => {
+        if (!confirm("Apakah anda yakin menghapus user ini ?")) return
+
+        try {
+            await api.delete(`/admin/users/${id}`)
+            toast.success("User berhasil dihapus")
+            fetchUsers()
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Gagal menghapus user")
+        }
+    }
+
     if (loading && users.length === 0) {
         return (
             <div className="min-h-screen p-4 md:p-6 bg-white">
@@ -309,7 +321,7 @@ export default function UsersPage() {
                                                         Edit User
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem>Lihat Detail</DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-red-600">Hapus</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => hadleDelete(user.id)} className="text-red-600">Hapus</DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>

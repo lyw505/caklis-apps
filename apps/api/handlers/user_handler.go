@@ -239,9 +239,13 @@ func DeleteUser(c fiber.Ctx) error {
 		return utils.NotFoundResponse(c, "User tidak ditemukan")
 	}
 
-	user.IsActive = false
-	if err := config.DB.Delete(&user).Error; err != nil {
+	user.IsActive = true
+	if err := config.DB.Unscoped().Delete(&user).Error; err != nil {
 		return utils.InternalErrorResponse(c, "Gagal menghapus user")
+	}
+
+	if user.PhotoProfileKey != nil && *user.PhotoProfileKey != "" {
+		services.DeleteFile(*user.PhotoProfileKey)
 	}
 
 	return utils.SuccessResponse(c, "User berhasil dihapus", nil)

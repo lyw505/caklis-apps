@@ -144,3 +144,27 @@ func GetFileExtension(filename string) string {
 	ext := filepath.Ext(filename)
 	return strings.ToLower(ext)
 }
+
+func DeleteFile(objectKey string) error {
+	if objectKey == "" {
+		return nil
+	}
+
+	ctx := context.Background()
+	bucketName := os.Getenv("MINIO_BUCKET")
+	if bucketName == "" {
+		bucketName = "cakli"
+	}
+
+	client := config.GetMinioClient()
+	if client == nil {
+		return fmt.Errorf("minio client not initialized")
+	}
+
+	err := client.RemoveObject(ctx, bucketName, objectKey, minio.RemoveObjectOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to delete file: %v", err)
+	}
+
+	return nil
+}

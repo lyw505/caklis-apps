@@ -304,9 +304,19 @@ func UpdateDriver(c fiber.Ctx) error {
 	if req.BankAccountNumber != nil {
 		driver.BankAccountNumber = req.BankAccountNumber
 	}
+	// if req.PhotoProfileKey != nil {
+	// 	driver.PhotoProfileKey = req.PhotoProfileKey
+	// }
+
 	if req.PhotoProfileKey != nil {
-		driver.PhotoProfileKey = req.PhotoProfileKey
+	if strings.Contains(*req.PhotoProfileKey, "http") {
+		return utils.ValidationErrorResponse(c, []utils.ErrorDetail{
+			{Field: "photo_profile_key", Message: "Gunakan object key, bukan URL"},
+		})
 	}
+	driver.PhotoProfileKey = req.PhotoProfileKey
+}
+
 	if req.PhotoKTPKey != nil {
 		driver.PhotoKTPKey = req.PhotoKTPKey
 	}
@@ -341,9 +351,20 @@ func DeleteDriver(c fiber.Ctx) error {
 		return utils.NotFoundResponse(c, "Driver tidak ditemukan")
 	}
 
-	driver.IsActive = false
-	if err := config.DB.Delete(&driver).Error; err != nil {
+	driver.IsActive = true
+	if err := config.DB.Unscoped().Delete(&driver).Error; err != nil {
 		return utils.InternalErrorResponse(c, "Gagal menghapus driver")
+	}
+
+	// 🔥 hapus file dulu
+	if driver.PhotoProfileKey != nil && *driver.PhotoProfileKey != "" {
+		services.DeleteFile(*driver.PhotoProfileKey)
+	}
+	if driver.PhotoKTPKey != nil && *driver.PhotoKTPKey != "" {
+		services.DeleteFile(*driver.PhotoKTPKey)
+	}
+	if driver.PhotoFaceKey != nil && *driver.PhotoFaceKey != "" {
+		services.DeleteFile(*driver.PhotoFaceKey)
 	}
 
 	return utils.SuccessResponse(c, "Driver berhasil dihapus", nil)
